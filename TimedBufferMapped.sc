@@ -1,7 +1,7 @@
 
-// This adds support for recording continuous controls
+// This adds support for recording mapped controls
 
-RecordBufSC {
+RecordBufM {
   *ar {
     thisMethod.notYetImplemented;
   }
@@ -31,7 +31,7 @@ RecordBufSC {
 }
 RecordBufSCError : Error {}
 
-PlayBufSC {
+PlayBufM {
   *ar {
     thisMethod.notYetImplemented;
   }
@@ -59,7 +59,7 @@ PlayBufSC {
 }
 
 
-SpaceLinemapContinuous : SpaceLinemap {
+SpaceLinemapMapped: SpaceLinemap {
 
   var <>bufspec;
 
@@ -94,9 +94,9 @@ SpaceLinemapContinuous : SpaceLinemap {
 }
 
 + SpaceTracker {
-  *toContinuous {
+  *toMapped {
     arg server, path;
-    ^SpaceTracker(path).toContinuous(server);
+    ^SpaceTracker(path).toMapped(server);
   }
   base {
     ^tree.path.dirname +/+ PathName(tree.path).fileNameWithoutExtension;
@@ -109,10 +109,10 @@ SpaceLinemapContinuous : SpaceLinemap {
     arg meta;
     ^File.use(meta, "r") {|f| f.readAllString.split($ ).collect{|ch|ch.asInteger}};
   }
-  continuousTmp {
+  mappedTmp {
   }
 
-  toContinuousCached {
+  toMappedCached {
     arg server;
     var base, bufspec, channels;
     base = this.base;
@@ -125,14 +125,14 @@ SpaceLinemapContinuous : SpaceLinemap {
         buf.numChannels = snd.numChannels;
       });
       //"cont2".postln;
-      File.exists(file++".continuous.2");
-      bufspecch = [buf] ++ channels.collect { |ch| [ch, Buffer.read(server, file ++ ".continuous."++ch)] }.flat;
+      File.exists(file++".mapped.2");
+      bufspecch = [buf] ++ channels.collect { |ch| [ch, Buffer.read(server, file ++ ".mapped."++ch)] }.flat;
     };
     polyphony = bufspec[0].size;
     ^bufspec; 
   }
 
-  toContinuous {
+  toMapped {
     arg server;
     var base, bufspec, channels, buffers;
     base = this.base;
@@ -151,7 +151,7 @@ SpaceLinemapContinuous : SpaceLinemap {
       line = FloatArray.newClear(read.numChannels);
       spec = channels.collect {|ch|
         var writech;
-        writech = SoundFile(read.path ++ ".continuous."++ch);
+        writech = SoundFile(read.path ++ ".mapped."++ch);
         writech.headerFormat = headerFormat;
         writech.sampleFormat = sampleFormat;
         writech.openWrite;
@@ -196,11 +196,11 @@ SpaceLinemapContinuous : SpaceLinemap {
     bufspec = bufspec.collect { |bufspecch, i| [buffers[i]]++bufspecch;};
     ^bufspec;
   }
-  *continuousTo {
+  *fromMapped {
     arg path, bufspec, frames;
-    ^SpaceTracker(path).continuousTo(bufspec, frames);
+    ^SpaceTracker(path).mappedTo(bufspec, frames);
   }
-  continuousTo {
+  fromMapped {
     arg bufspec, argFrames;
     var buffer, controlrate, base, count,server;
     frames = argFrames;
@@ -262,10 +262,10 @@ SpaceLinemapContinuous : SpaceLinemap {
       });
     }
   }
-  isContinuous {
+  isMapped {
     ^PathName(this.base).isFolder;
   }
-  *continuousAlloc {
+  *allocMapped {
     arg server, polyphony, numChannels, channels = #[], frames = 16384, cframes = 16777216;
     var bufspec;
     bufspec = polyphony.collect {
