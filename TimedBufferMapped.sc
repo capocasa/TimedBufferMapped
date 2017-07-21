@@ -59,7 +59,7 @@ PlayBufM {
 }
 
 
-SpaceLinemapMapped: SpaceLinemap {
+SpaceLinemapMapped : SpaceLinemap {
 
   var <>bufspec;
 
@@ -198,7 +198,7 @@ SpaceLinemapMapped: SpaceLinemap {
   }
   *fromMapped {
     arg path, bufspec, frames;
-    ^SpaceTracker(path).mappedTo(bufspec, frames);
+    ^SpaceTracker(path).fromMapped(bufspec, frames);
   }
   fromMapped {
     arg bufspec, argFrames;
@@ -213,7 +213,7 @@ SpaceLinemapMapped: SpaceLinemap {
     count = 1;
 
     forkIfNeeded {
-      this.bufferToInit(bufspec.collect {|bufspecch|bufspecch[0]}, frames);
+      this.fromBufferInit(bufspec.collect {|bufspecch|bufspecch[0]}, frames);
       //frames.postln;
       server.sync;
       if (frames.every({|e|e==1})) {
