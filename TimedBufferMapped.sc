@@ -10,7 +10,7 @@ RecordBufM {
     arg inputArray, bufspec=#[0], run=1.0, doneAction=0;
 
     if (inputArray.size != bufspec.size) {
-      RecordBufSCError("inputArray size is %, but bufspec size is %, need be equal".format(inputArray.size, bufspec.size)).throw;
+      RecordBufMError("inputArray size is %, but bufspec size is %, need be equal".format(inputArray.size, bufspec.size)).throw;
     };
 
     inputArray = inputArray.copy;
@@ -26,10 +26,10 @@ RecordBufM {
       };
       inputArray[i] = inputch;
     };
-    ^RecordBufS.kr(inputArray, bufspec.collect{|bufspecch|bufspecch[0]}, run, doneAction);
+    ^RecordBufT.kr(inputArray, bufspec.collect{|bufspecch|bufspecch[0]}, run, doneAction);
   }
 }
-RecordBufSCError : Error {}
+RecordBufMError : Error {}
 
 PlayBufM {
   *ar {
@@ -40,7 +40,7 @@ PlayBufM {
     arg numChannels, bufspec = #[0], rate=1.0, trigger=1.0, startPos=0.0, doneAction=0;
     var play, out;
 
-    out = PlayBufS.kr(numChannels, bufspec.collect{|bufspecch|bufspecch[0]}, rate, trigger, startPos, doneAction);
+    out = PlayBufT.kr(numChannels, bufspec.collect{|bufspecch|bufspecch[0]}, rate, trigger, startPos, doneAction);
 
     bufspec.do { |bufspecch, i|
       var run;
