@@ -213,10 +213,10 @@ SpaceLinemapMapped : SpaceLinemap {
     count = 1;
 
     forkIfNeeded {
-      this.fromBufferInit(bufspec.collect {|bufspecch|bufspecch[0]}, frames);
+      this.fromBufferInit(bufspec.collect {|bufspecch|bufspecch[0]});
       //frames.postln;
       server.sync;
-      if (frames.every({|e|e==1})) {
+      if (frames.asArray.every({|e|e==1})) {
         "No frames were recorded, not saving %".format(tree.path).warn;
         this.yield;
       };
