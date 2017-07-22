@@ -59,5 +59,21 @@ PlayBufM {
 }
 
 
++ Buffer {
+  *allocMapped {
+    arg server, polyphony, numChannels, channels = #[], frames = 16384, cframes = 16777216;
+    var bufspec;
+    bufspec = polyphony.collect {
+      var bufspecch;
+      bufspecch = Array.new(2*channels.size+1);
+      bufspecch.add(Buffer.alloc(server, frames, numChannels+1));
+      channels.do { |ch|
+        bufspecch.add(ch);
+        bufspecch.add(Buffer.alloc(server, cframes));
+      };
+      bufspecch;
+    };
+    ^bufspec;
+  }
 
-
+}
