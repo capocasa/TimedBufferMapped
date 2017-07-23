@@ -77,10 +77,16 @@ PlayBufM {
   }
 
   *readMapped {
-    arg server;
-    var base, bufspec, channels, buffers, sounds, headerFormat, numChannels;
-    base = this.base;
-    channels = this.loadChannels(this.meta(base)); 
+    arg server, path;
+    var bufspec, files, channels, buffers, sounds, polyphony, headerFormat, fileExtension,numChannels;
+    files=PathName(path).files.select{|f|f.fileName[0]==$p}.postln;
+    #polyphony, channels, fileExtension = files.first.fileName.split($.);
+    channels = channels.split($-);
+    headerFormat = fileExtension.toLower;
+    polyphony = files.collect{|f|f.fileName[1..f.fileName.indexOf($.)-1].asInteger}.maxItem+1;
+
+    [polyphony, channels, headerFormat].postln;
+    /*channels = path +/this.loadChannels(this.meta(base)); 
     
     this.toSoundFile;
     bufspec=sounds.collect {|read|
@@ -139,6 +145,7 @@ PlayBufM {
     buffers = this.toBuffer(server);
     bufspec = bufspec.collect { |bufspecch, i| [buffers[i]]++bufspecch;};
     ^bufspec;
+   */
   }
 }
 
