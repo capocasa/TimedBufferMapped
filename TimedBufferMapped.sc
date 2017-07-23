@@ -16,13 +16,13 @@ RecordBufM {
     inputArray = inputArray.copy;
 
     bufspec.do{|bufspecch, i|
-      var rec, inputch, run, phase;
+      var rec, inputch, run, time;
       inputch = inputArray[i].copy;
       run = inputch[0] > 0;
-      phase = Phasor.kr(1, run, 0, 2147483647);
+      time = Sweep.kr(1,run>0);
       bufspecch[1..].pairsDo { |ch, b|
-        RecordBuf.kr(inputch[ch], b, run:run);
-        inputch[ch] = phase;
+        RecordBufT.kr(inputch[ch], b, run:run);
+        inputch[ch] = time;
       };
       inputArray[i] = inputch;
     };
@@ -50,7 +50,7 @@ PlayBufM {
         var outch;
         outch = out[i].copy; // avoid buffer coloring error
         startPos = outch[ch];
-        outch[ch] = PlayBuf.kr(1, b, rate * run, run, startPos) * run;
+        outch[ch] = PlayBufT.kr(1, b, rate * run, run, startPos) * run;
         out[i] = outch;
       };
     }
@@ -69,7 +69,7 @@ PlayBufM {
       bufspecch.add(Buffer.alloc(server, frames, numChannels+1));
       channels.do { |ch|
         bufspecch.add(ch);
-        bufspecch.add(Buffer.alloc(server, cframes));
+        bufspecch.add(Buffer.alloc(server, cframes, 2));
       };
       bufspecch;
     };
