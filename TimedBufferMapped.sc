@@ -76,9 +76,9 @@ PlayBufM {
     ^bufspec;
   }
 
-  readMapped {
+  *readMapped {
     arg server;
-    var base, bufspec, channels, buffers;
+    var base, bufspec, channels, buffers, sounds, headerFormat, numChannels;
     base = this.base;
     channels = this.loadChannels(this.meta(base)); 
     
@@ -88,7 +88,7 @@ PlayBufM {
       read.openRead;
       write = SoundFile(read.path ++ ".ren");
       write.numChannels = numChannels;
-      write.sampleFormat = sampleFormat;
+      write.sampleFormat = "float";
       write.headerFormat = headerFormat;
       write.openWrite;
 
@@ -97,7 +97,7 @@ PlayBufM {
         var writech;
         writech = SoundFile(read.path ++ ".mapped."++ch);
         writech.headerFormat = headerFormat;
-        writech.sampleFormat = sampleFormat;
+        writech.sampleFormat = "float";
         writech.openWrite;
         [ch, writech];
       }.flatten;
