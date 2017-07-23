@@ -146,7 +146,7 @@ PlayBufM {
 + Array {
   writeMapped {
     arg path, headerFormat = "aiff";
-    var buffer, base, count, server, soundExtension;
+    var buffer, base, count, server, soundExtension, channels;
     server=this[0][0].server;
     soundExtension = headerFormat.toLower;
     count = 1;
@@ -158,11 +158,13 @@ PlayBufM {
     //};
     path.mkdir;
 //5.postln;
+    channels = [];
+    this[0][1..].pairsDo{|ch|channels=channels.add(ch)};
     this.do { |bufspecch, i|
       var read, write, pathch, tmp, line, id;
       fork {
 //4.postln;
-        pathch=path+/+"p"++i++$.++soundExtension;
+        pathch=path+/+"p"++i++$.++channels.join("-")++$.++soundExtension;
         tmp = thisProcess.platform.defaultTempDir +/+ "map" ++ 2147483647.rand++$.++soundExtension;
         bufspecch[0].writeTimed(tmp, headerFormat);
         server.sync;
@@ -202,6 +204,7 @@ PlayBufM {
         File.delete(tmp);
       };
 //8.postln;
+
     }
   }
 }
