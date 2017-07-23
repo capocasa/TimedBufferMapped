@@ -22,7 +22,7 @@ RecordBufM {
       time = Sweep.kr(1,run>0);
       bufspecch[1..].pairsDo { |ch, b|
         RecordBufT.kr(inputch[ch], b, run:run);
-        inputch[ch] = time;
+        inputch[ch] = if(run,time,0);
       };
       inputArray[i] = inputch;
     };
@@ -151,20 +151,20 @@ PlayBufM {
     soundExtension = headerFormat.toLower;
     count = 1;
 
-    6.postln;
-    forkIfNeeded {
-      //if (frames.asArray.every({|e|e==1})) {
-      //  "No frames, not saving %".format(path).warn;
-      //  this.yield;
-      //};
-      path.mkdir;
-      5.postln;
-      this.do { |bufspecch, i|
-        var read, write, pathch, tmp, line, id;
-        4.postln;
+//6.postln;
+    //if (frames.asArray.every({|e|e==1})) {
+    //  "No frames, not saving %".format(path).warn;
+    //  this.yield;
+    //};
+    path.mkdir;
+//5.postln;
+    this.do { |bufspecch, i|
+      var read, write, pathch, tmp, line, id;
+      fork {
+//4.postln;
         pathch=path+/+"p"++i++$.++soundExtension;
         tmp = thisProcess.platform.defaultTempDir +/+ "map" ++ 2147483647.rand++$.++soundExtension;
-        bufspecch[0].write(tmp, headerFormat, "float");
+        bufspecch[0].writeTimed(tmp, headerFormat);
         server.sync;
         read = SoundFile(tmp);
         read.openRead;
@@ -174,31 +174,34 @@ PlayBufM {
         write.sampleFormat = "float";
         write.openWrite;
         line = FloatArray.newClear(read.numChannels);
-        3.postln;
+//3.postln;
         id = 0;
         while { read.readData(line); line.size > 0 && { line[0] > 0 } } {
-          2.postln;
-          bufspecch[1..].pairsDo {|ch, b|
+//2.postln;
+          bufspecch[1..].pairsDo {|ch, b, x|
             var r, w, p, start;
-            start = line[ch+1]; // ch is output channel index, buffers have additional time channel at beginning, so ch+1
-            p = path +/+ "v"++id ++ $. ++ soundExtension;
-            "read polyphony % id % of length % to % with value %".format(i,id,line[0],p,line[ch+1]).postln;
-            b.writeTimed(p, headerFormat, nil, start.asInteger);
-            line[ch+1] = id;
+            id = 2147483647.rand;
+            if (line[1] > 0) {  // Don't save signals for pause notes
+//9.postln;
+//line.postln;
+              start = line[ch+1]; // ch is output channel index, buffers have additional time channel at beginning, so ch+1
+              p = path +/+ "v"++id ++ $. ++ soundExtension;
+//"read polyphony % id % of length % to % with value %".format(i,id,line[0],p,line[ch+1]).postln;
+              b.writeTimed(p, headerFormat, nil, start.asInteger);
+              line[ch+1] = id;
+//"id %".format(id).postln;
+            };
             write.writeData(line);
-            id=id+1;
           };
-          1.postln;
+//1.postln;
         };
         server.sync; // Without this, longer passages crash the server
-        7.postln;
+//7.postln;
         read.close;
         write.close;
         File.delete(tmp);
       };
-      8.postln;
-      server.sync;
-      9.postln;
+//8.postln;
     }
   }
 }
