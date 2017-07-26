@@ -19,10 +19,10 @@ RecordBufM {
       var rec, inputch, run, time;
       inputch = inputArray[i].copy;
       run = inputch[0] > 0;
+      time = Sweep.kr(1,run>0); 
       bufspecch[1..].pairsDo { |ch, b|
-        var frames;
-        frames = RecordBufT.kr(inputch[ch], b, run:run);
-        inputch[ch] = frames;
+        RecordBufT.kr(inputch[ch], b, run:run);
+        inputch[ch] = time;
       };
       inputArray[i] = inputch;
     };
