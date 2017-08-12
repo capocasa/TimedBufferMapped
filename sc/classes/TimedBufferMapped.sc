@@ -179,24 +179,24 @@ PlayBufM {
     soundExtension = headerFormat.toLower;
     count = 1;
 
-6.postln;
+//6.postln;
     //if (frames.asArray.every({|e|e==1})) {
     //  "No frames, not saving %".format(path).warn;
     //  this.yield;
     //};
     path.mkdir;
-5.postln;
+//5.postln;
     channels = [];
     this[0][1..].pairsDo{|ch|channels=channels.add(ch)};
     this.do { |bufspecch, i|
-      var read, write, pathch, tmp, line, lastline, id;
+      var read, write, pathch, tmp, line, id;
       fork {
-4.postln;
+//4.postln;
         pathch=path+/+"p"++i++$.++channels.join("-")++$.++soundExtension;
         tmp = thisProcess.platform.defaultTempDir +/+ "map" ++ 2147483647.rand++$.++soundExtension;
         bufspecch[0].writeTimed(tmp, headerFormat);
         server.sync;
-"a %".format(File.exists(tmp)).postln;
+//"a %".format(File.exists(tmp)).postln;
         read = SoundFile.openRead(tmp);
         write = SoundFile(pathch);
         write.numChannels = read.numChannels;
@@ -204,38 +204,37 @@ PlayBufM {
         write.sampleFormat = "float";
         write.openWrite;
         line = FloatArray.newClear(read.numChannels);
-        lastline = Array.fill(line.size, 0);
-"3 % %".format(tmp, read.numChannels).postln;
+//"3 % %".format(tmp, read.numChannels).postln;
         id = 0;
-        while { read.readData(line); (line.size > 0) } {
-2.postln;
-lastline.postln;
-line.postln;
+        while { read.readData(line); line.size > 0 } {
+//2.postln;
+//line.postln;
           bufspecch[1..].pairsDo {|ch, b, x|
             var r, w, p, start, length;
-            if (lastline[1] > 0) {  // Don't save signals for pause notes
-9.postln;
+            if (line[1] > 0) {  // Don't save signals for pause notes
+//9.postln;
               id = 16777215.rand; // largest integer that accurately casts to float
-              start = lastline[ch+1]; // ch is output channel index, buffers have additional time channel at beginning, so ch+1
-              length = line[ch+1] - start;
+              start = line[ch+1]; // ch is output channel index, buffers have additional time channel at beginning, so ch+1
+              length = line[0];
               p = path +/+ "v"++id ++ $. ++ soundExtension;
-"read polyphony % id % of length % to % with value %".format(i,id,line[0],p,line[ch+1]).postln;
+//b.updateInfo;server.sync;"read polyphony % id % of length % start % to % buffer frames %".format(i,id,length,start,p,b.numFrames).postln;
               b.writeTimed(p, headerFormat, start, length);
+
+//b.getn(0, 20, action:{|x|"read array for id % %".format(id, x.asCompileString).postln});server.sync;
               line[ch+1] = id;
-"id %".format(id).postln;
+//"id %".format(id).postln;
             };
           };
-1.postln;
-          lastline = line;
+//1.postln;
           write.writeData(line);
         };
         server.sync; 
-7.postln;
+//7.postln;
         read.close;
         write.close;
         File.delete(tmp);
       };
-8.postln;
+//8.postln;
 
     }
   }
