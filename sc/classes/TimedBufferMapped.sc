@@ -83,15 +83,14 @@ PlayBufM {
     #polyphony, channels, fileExtension = files.first.fileName.split($.);
     channels = channels.split($-).collect{|c|c.asInteger};
     headerFormat = fileExtension.toLower;
-    headerFormat="aiff";
     polyphony = files.collect{|f|f.fileName[1..f.fileName.indexOf($.)-1].asInteger}.maxItem+1;
     sounds = files.collect{|f|SoundFile(f.fullPath)};
     bufspec=sounds.collect {|read|
       var write, line, spec, writeposch;
-      "read %".format(read.path).postln;
+//"read %".format(read.path).postln;
       read.openRead;
-      write = SoundFile(thisProcess.platform.defaultTempDir +/+ $m ++ 2147483647.rand ++ $.++ fileExtension);
-      "write %".format(write.path).postln;
+      write = SoundFile(thisProcess.platform.defaultTempDir +/+ "tmp.n" ++ 2147483647.rand ++ $.++ fileExtension);
+//"write %".format(write.path).postln;
       write.numChannels = read.numChannels;
       write.sampleFormat = "float";
       write.headerFormat = headerFormat;
@@ -99,66 +98,74 @@ PlayBufM {
       line = FloatArray.newClear(read.numChannels);
       spec = channels.collect {|ch|
         var writech;
-        writech = SoundFile(thisProcess.platform.defaultTempDir +/+ $v ++ 2147483647.rand ++ $. ++ fileExtension);
+        writech = SoundFile(thisProcess.platform.defaultTempDir +/+ "tmp.w" ++ 2147483647.rand ++ $. ++ fileExtension);
         writech.headerFormat = headerFormat;
         writech.sampleFormat = "float";
+//"openWrite %".format(writech.path).postln;
+        writech.numChannels = 2;
         writech.openWrite;
         [ch, writech];
       }.flatten;
 
-1.postln;
+//1.postln;
       writeposch = Array.fill(channels.maxItem+1, 0);
       while { read.readData(line); line.size > 0 }{
         var v, p, time;
-"pre %".format(line.asCompileString).postln;
+//"pre %".format(line.asCompileString).postln;
         if (line[1] > 0) {
-2.postln;
+//2.postln;
           spec.pairsDo { |ch, writech, i|
             v = line[ch+1];
             p = path +/+ $v ++ v ++ $.++ fileExtension;
 
-"channel path % exists %".format(p, File.exists(p)).postln;
-
             line[ch+1] = writeposch[ch];
-3.postln;
+//3.postln;
 
             SoundFile.use(p) { |readch|
               var chunk;
+//"channel path % exists % frames %".format(p, File.exists(p), readch.numFrames).postln;
               time = 0;
-              chunk = FloatArray.newClear(16384);
-              while { chunk.size > 0 }{
-                readch.readData(chunk);
+              chunk = FloatArray.newClear(64);
+              while { readch.readData(chunk); chunk.size > 0 }{
                 writech.writeData(chunk);
+//"concatenating channel % data: %".format(ch, chunk.asCompileString).postln;
                 chunk.pairsDo {|t|time = time + t};
               };
               writeposch.atInc(ch, time);
-              writech.close;
-              //[\frames, frames, frames - readch.numFrames, readch.numFrames].postln;
+//[\frames, frames, frames - readch.numFrames, readch.numFrames].postln;
             };
-4.postln;
+//4.postln;
           };
         };
-"post %".format(line.asCompileString).postln;
+//"post %".format(line.asCompileString).postln;
         write.writeData(line);
-6.postln;
+//6.postln;
       };
       read.close;
       write.close;
       spec.pairsDo {|ch, writech, i|
+//"y readTimed % isOpen %".format(writech.path, writech.isOpen).postln;
+        writech.close;
         spec[i+1] = Buffer.readTimed(server, writech.path);
         fork {
           server.sync;
+//"%".format(writech.path).postln;
+          //"soxi %".format(writech.path).unixCmdGetStdOut.postln;
           File.delete(writech.path);
+          writech.path = nil;
         };
       };
-6.postln;
+//"x readTimed %".format(write.path).postln;
       [Buffer.readTimed(server, write.path)]++spec;
     };
     fork {
       server.sync;
-      bufspec.collect{|b|File.delete(b[0].path)};
+      bufspec.collect{|b|
+        File.delete(b[0].path);
+        b[0].path = nil
+      };
     };
-7.postln;
+//7.postln;
     ^bufspec;
   }
 }
