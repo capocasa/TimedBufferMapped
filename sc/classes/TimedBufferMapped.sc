@@ -3,11 +3,17 @@
 
 RecordBufM {
   *ar {
-    thisMethod.notYetImplemented;
+    arg inputArray, bufspec=#[0], run=1.0, doneAction=0;
+    ^this.out(\ar, inputArray, bufspec, run, doneAction);
   }
 
   *kr {
     arg inputArray, bufspec=#[0], run=1.0, doneAction=0;
+    ^this.out(\kr, inputArray, bufspec, run, doneAction);
+  }
+
+  *out {
+    arg method, inputArray, bufspec, run, doneAction;
 
     if (inputArray.size != bufspec.size) {
       RecordBufMError("inputArray size is %, but bufspec size is %, need be equal".format(inputArray.size, bufspec.size)).throw;
@@ -19,41 +25,62 @@ RecordBufM {
       var inputch, run, time;
       inputch = inputArray[i].copy;
       run = inputch[0] > 0;
-      time = Sweep.kr(1,run>0); 
+      time = Sweep.perform(method,1,run>0); 
       bufspecch[1..].pairsDo { |ch, b|
-        RecordBufT.kr(inputch[ch], b, run:run);
+        RecordBufT.perform(method,inputch[ch], b, run:run);
         inputch[ch] = time;
       };
       inputArray[i] = inputch;
     };
-    ^RecordBufT.kr(inputArray, bufspec.collect{|bufspecch|bufspecch[0]}, run, doneAction);
+    ^RecordBufT.perform(method,inputArray, bufspec.collect{|bufspecch|bufspecch[0]}, run, doneAction);
   }
 }
 RecordBufMError : Error {}
 
 PlayBufM {
+ 
   *ar {
-    thisMethod.notYetImplemented;
+    arg bufspec = #[0], rate=1.0, trigger=1.0, startPos=0.0, doneAction=0;
+    ^this.out(\ar, bufspec,rate,trigger,startPos,doneAction);
   }
 
   *kr {
-    arg numChannels, bufspec = #[0], rate=1.0, trigger=1.0, startPos=0.0, doneAction=0;
+    arg bufspec = #[0], rate=1.0, trigger=1.0, startPos=0.0, doneAction=0;
+    ^this.out(\kr, bufspec,rate,trigger,startPos,doneAction);
+  }
+
+  *out {
+    arg method,bufspec,rate,trigger,startPos,doneAction;
     var play, out;
 
-    out = PlayBufT.kr(numChannels, bufspec.collect{|bufspecch|bufspecch[0]}, rate, trigger, startPos, doneAction);
+    if(bufspec.first.isArray == false) {
+      bufspec=[bufspec];
+    };
+
+    out = PlayBufT.perform(method,bufspec.first.first.numChannels-1, bufspec.collect{|bufspecch|bufspecch[0]}, rate, trigger, startPos, 0, doneAction);
+
+    if(out.first.isArray == false) {
+      out=[out];
+    };
 
     bufspec.do { |bufspecch, i|
       var run;
+      
       run = out[i][0] > 0;
 
       bufspecch[1..].pairsDo { |ch, b|
         var outch;
         outch = out[i].copy; // avoid buffer coloring error
         startPos = outch[ch];
-        outch[ch] = PlayBufT.kr(1, b, rate * run, run, startPos) * run;
+        outch[ch] = PlayBufT.perform(method,1, b, rate * run, run, startPos) * run;
         out[i] = outch;
       };
-    }
+    };
+
+    if (out.size == 1) {
+      out=out.first;
+    };
+
     ^out;
   }
 }
